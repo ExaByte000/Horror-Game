@@ -6,79 +6,73 @@ namespace FpsHorrorKit
     public class ITOLightSwitch : MonoBehaviour, IInteractable
     {
         [Header("Light Settings")]
-        public GameObject _light;
         public Transform lightSwitchButton;
-        public AudioSource switcherAudioSource;
-        public bool lightActiveOnAwake = false;
 
         [Header("Rotation Settings")]
-        public float onRotationAngle;
-        public float offRotationAngle;
+        public float onRotationAngle = -30f;
+        public float offRotationAngle = 30f;
         public float rotationSpeed = 200f;
 
         [Header("Interact UI")]
         [SerializeField] private string interactText = "Light Open/Close [E]";
 
-        bool isFinished = true;
-        private float initialRotationX;
+        private bool isLightOn = false;
+        private bool isRotating = false;
 
-        private void Awake()
-        {
-            if (lightActiveOnAwake)
-            {
-                _light.SetActive(true);
-                lightSwitchButton.localEulerAngles = new Vector3(onRotationAngle, 0, 0);
-            }
-            else
-            {
-                _light.SetActive(false);
-                lightSwitchButton.localEulerAngles = new Vector3(offRotationAngle, 0, 0);
-            }
-        }
         private void Start()
         {
-            isFinished = true;
-            // Store the initial local rotation
-            initialRotationX = lightSwitchButton.localEulerAngles.x;
-        }
-
-        IEnumerator RotateSwitcher(float targetRotation, float initialRotation)
-        {
-            isFinished = false;
-            if (switcherAudioSource != null) switcherAudioSource.Play();
-
-            float distance = Mathf.Abs(targetRotation - initialRotation);
-            float currentRotation = initialRotation;
-            float step = 0;
-
-            int multiple = targetRotation > initialRotation ? 1 : -1;
-
-            while (distance > 0.1f)
-            {
-                step = rotationSpeed * Time.deltaTime;
-                distance -= step;
-
-                currentRotation += step * multiple;
-                lightSwitchButton.localEulerAngles = new Vector3(currentRotation, 0, 0);
-                yield return null;
-            }
-            lightSwitchButton.localEulerAngles = new Vector3(targetRotation, 0, 0);
-            // Finalize the rotation
-            isFinished = true;
-            Debug.Log("Light Switcher Rotated");
+            // Устанавливаем начальное положение (выключено)
+            lightSwitchButton.localEulerAngles = new Vector3(offRotationAngle, 0, 0);
         }
 
         public void Interact()
         {
-            if (!isFinished) return;
+            if (isRotating) return;
 
-            _light.SetActive(!_light.activeSelf);
-            float targetRotation = _light.activeSelf ? onRotationAngle : offRotationAngle;
-            float initialRotation = _light.activeSelf ? offRotationAngle : onRotationAngle;
+            // Переключаем состояние
+            isLightOn = !isLightOn;
 
-            StartCoroutine(RotateSwitcher(targetRotation, initialRotation));
+            // Определяем целевой угол в зависимости от нового состояния
+            float targetRotation = isLightOn ? onRotationAngle : offRotationAngle;
+
+            // Получаем текущий угол
+            float currentRotation = lightSwitchButton.localEulerAngles.x;
+
+            // Нормализуем углы для корректного сравнения
+            if (currentRotation > 180f) currentRotation -= 360f;
+
+            StartCoroutine(RotateToTarget(targetRotation, currentRotation));
         }
 
+        private IEnumerator RotateToTarget(float targetRotation, float startRotation)
+        {
+            isRotating = true;
+
+            float currentRotation = startRotation;
+            float rotationDirection = Mathf.Sign(targetRotation - startRotation);
+
+            while (Mathf.Abs(targetRotation - currentRotation) > 0.1f)
+            {
+                float step = rotationSpeed * Time.deltaTime * rotationDirection;
+                currentRotation += step;
+
+                // Проверяем, не переходим ли мы через целевое значение
+                if (rotationDirection > 0 && currentRotation >= targetRotation ||
+                    rotationDirection < 0 && currentRotation <= targetRotation)
+                {
+                    currentRotation = targetRotation;
+                }
+
+                lightSwitchButton.localEulerAngles = new Vector3(currentRotation, 0, 0);
+                yield return null;
+            }
+
+            // Устанавливаем точное финальное значение
+            lightSwitchButton.localEulerAngles = new Vector3(targetRotation, 0, 0);
+            isRotating = false;
+
+            Debug.Log($"Light Switcher: {(isLightOn ? "ON" : "OFF")} - Angle: {targetRotation}");
+        }
 
         public void Highlight()
         {

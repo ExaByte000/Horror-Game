@@ -91,7 +91,7 @@ Material:
     - _SupportDecals: 1
     - _SurfaceType: 0
     - _TipFalloff: 1
-    - _TipPosition: 0.918
+    - _TipPosition: 1
     - _TransparentBackfaceEnable: 0
     - _TransparentCullMode: 2
     - _TransparentSortPriority: 0
