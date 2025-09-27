@@ -43,8 +43,8 @@ namespace FpsHorrorKit
             showHiglight = true;
             sendRaycast = true;
 
-            defaultInteractText = "Press [E] to interact";
-            interactTextUI.text = defaultInteractText;
+            //defaultInteractText = "Press [E] to interact";
+            //interactTextUI.text = defaultInteractText;
 
             defaultHighlightObj = higlightObject;
         }

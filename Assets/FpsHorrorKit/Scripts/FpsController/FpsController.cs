@@ -35,6 +35,9 @@ namespace FpsHorrorKit
         private Vector3 velocity;
         private float cameraPitch;
 
+        public float CameraPich { get { return cameraPitch; } set { cameraPitch = value; } }
+        public Vector3 Velocity { get { return velocity; } set { velocity = value; } }
+
         private void Awake()
         {
             characterController = GetComponent<CharacterController>();

@@ -30,6 +30,7 @@ namespace FpsHorrorKit
         private Vector3 initialForward;
         private Collider _collider;
         private Transform player;
+        private bool candleIsTaken = false;
 
         void Start()
         {
@@ -62,6 +63,10 @@ namespace FpsHorrorKit
 
         public void HoldInteract()
         {
+            if(_collider.tag == "DoorInStartRoom" && !candleIsTaken)
+            {
+                return;
+            }
             if (colliderDisabledDuringInteraction && _collider != null)
             {
                 _collider.enabled = false;
@@ -94,7 +99,15 @@ namespace FpsHorrorKit
 
         public void Highlight()
         {
-            PlayerInteract.Instance.ChangeInteractImage(interactImageUi);
+            if (_collider.tag == "DoorInStartRoom" && !candleIsTaken)
+            {
+                return ;
+            }
+            
+            
+                PlayerInteract.Instance.ChangeInteractImage(interactImageUi);
+            
+            
         }
 
         public void UnHighlight()
@@ -103,6 +116,21 @@ namespace FpsHorrorKit
             {
                 _collider.enabled = true;
             }
+        }
+
+        private void OnEnable()
+        {
+            ITOCandle.CandleTaken += CandleIsTaken;
+        }
+
+        private void OnDisable()
+        {
+            ITOCandle.CandleTaken -= CandleIsTaken;
+        }
+
+        private void CandleIsTaken()
+        {
+            candleIsTaken = true;
         }
     }
 }
